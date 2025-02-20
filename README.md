@@ -117,3 +117,126 @@ end
 
 - This summarizes how Rails handles responses in controllers efficiently using conventions.
 
+## 2.2 Using render
+
+- The render method in Rails handles rendering content for the browser.
+
+- It allows customization of rendering behavior, including:
+
+  - Rendering default views
+
+  - Rendering specific templates or files
+
+  - Rendering inline code or nothing at all
+
+  - Rendering text, JSON, or XML
+
+  - Specifying content type or HTTP status
+
+**`render_to_string`**
+
+  - Returns a string representation of the rendered content instead of sending a response to the browser.
+
+  - Accepts the same options as render.
+
+
+### 2.2.1 Rendering an Action's View
+
+- You can render a different template within the same controller using render:
+
+```ruby
+  def update
+    @book = Book.find(params[:id])
+    if @book.update(book_params)
+      redirect_to(@book)
+    else
+      render "edit"
+    end
+  end
+```
+
+- If update fails, it renders the edit.html.erb template within the same controller.
+
+**Alternative Syntax**
+
+- You can use a symbol instead of a string and specify an HTTP status:
+
+```ruby
+  def update
+    @book = Book.find(params[:id])
+    if @book.update(book_params)
+      redirect_to(@book)
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+```
+
+- `status: :unprocessable_entity` indicates a validation failure (HTTP 422).
+
+### 2.2.2 Rendering an Action's Template from Another Controller
+
+- In Rails, you can render a template from a different controller by specifying the full path relative to app/views.
+
+**Usage**
+
+- If you want to render a view from a different controller, use the full path:
+
+```ruby
+render "products/show"
+```
+
+- Rails detects the different controller because of the slash (/) in the path.
+
+- You can also explicitly specify the template option:
+
+```ruby
+render template: "products/show"
+```
+
+- This approach was required in Rails 2.2 and earlier but is now optional.
+
+**Example Scenario**
+
+- If you're inside `AdminProductsController` located in `app/controllers/admin`, and you need to render a view from `app/views/products`, you can do:
+
+```ruby
+render "products/show"
+```
+
+- or explicitly:
+
+```ruby
+render template: "products/show"
+```
+
+**Key Takeaways**
+
+- Use the full path relative to `app/views` when rendering from another controller.
+
+- The embedded `slash (/)` signals Rails to look for the template in a different controller’s view directory.
+
+- `:template` is an optional explicit way to define the view path.
+
+### 2.2.3 Wrapping It Up
+
+- Two Ways of Rendering:
+
+  - Rendering the template of another action in the same controller
+
+  - Rendering the template of another action in a different controller
+
+- Both methods are variations of the same operation.
+
+**Rendering `edit.html.erb` in `BooksController#update`**
+
+- If the book update fails, the following render calls will all render the edit.html.erb template from views/books:
+
+```ruby
+render :edit
+render action: :edit
+render "edit"
+render action: "edit"
+render "books/edit"
+render template: "books/edit"
+```
