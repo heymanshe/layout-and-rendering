@@ -117,3 +117,60 @@ end
 
 - This summarizes how Rails handles responses in controllers efficiently using conventions.
 
+## 2.2 Using render
+
+- The render method in Rails handles rendering content for the browser.
+
+- It allows customization of rendering behavior, including:
+
+  - Rendering default views
+
+  - Rendering specific templates or files
+
+  - Rendering inline code or nothing at all
+
+  - Rendering text, JSON, or XML
+
+  - Specifying content type or HTTP status
+
+**`render_to_string`**
+
+  - Returns a string representation of the rendered content instead of sending a response to the browser.
+
+  - Accepts the same options as render.
+
+
+### 2.2.1 Rendering an Action's View
+
+- You can render a different template within the same controller using render:
+
+```ruby
+  def update
+    @book = Book.find(params[:id])
+    if @book.update(book_params)
+      redirect_to(@book)
+    else
+      render "edit"
+    end
+  end
+```
+
+- If update fails, it renders the edit.html.erb template within the same controller.
+
+**Alternative Syntax**
+
+- You can use a symbol instead of a string and specify an HTTP status:
+
+```ruby
+  def update
+    @book = Book.find(params[:id])
+    if @book.update(book_params)
+      redirect_to(@book)
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+```
+
+- `status: :unprocessable_entity` indicates a validation failure (HTTP 422).
+
