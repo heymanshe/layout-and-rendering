@@ -17,6 +17,7 @@ class BooksController < ApplicationController
 
   # GET /books/1/edit
   def edit
+    @book = Book.find(params[:id])
   end
 
   # POST /books or /books.json
@@ -49,10 +50,10 @@ class BooksController < ApplicationController
     if @book.update(book_params)
       redirect_to(@book)
     else
-      render :edit, status: :unprocessable_entity
+       render :edit
+      #  , status: :unprocessable_entity
     end
   end
-
 
   # DELETE /books/1 or /books/1.json
   def destroy
@@ -72,6 +73,6 @@ class BooksController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def book_params
-      params.expect(book: [ :title, :author ])
+      params.expect(book).permit(:title, :author)
     end
 end

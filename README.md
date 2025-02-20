@@ -218,3 +218,25 @@ render template: "products/show"
 
 - `:template` is an optional explicit way to define the view path.
 
+### 2.2.3 Wrapping It Up
+
+- Two Ways of Rendering:
+
+  - Rendering the template of another action in the same controller
+
+  - Rendering the template of another action in a different controller
+
+- Both methods are variations of the same operation.
+
+**Rendering `edit.html.erb` in `BooksController#update`**
+
+- If the book update fails, the following render calls will all render the edit.html.erb template from views/books:
+
+```ruby
+render :edit
+render action: :edit
+render "edit"
+render action: "edit"
+render "books/edit"
+render template: "books/edit"
+```
