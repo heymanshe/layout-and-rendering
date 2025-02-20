@@ -174,3 +174,47 @@ end
 
 - `status: :unprocessable_entity` indicates a validation failure (HTTP 422).
 
+### 2.2.2 Rendering an Action's Template from Another Controller
+
+- In Rails, you can render a template from a different controller by specifying the full path relative to app/views.
+
+**Usage**
+
+- If you want to render a view from a different controller, use the full path:
+
+```ruby
+render "products/show"
+```
+
+- Rails detects the different controller because of the slash (/) in the path.
+
+- You can also explicitly specify the template option:
+
+```ruby
+render template: "products/show"
+```
+
+- This approach was required in Rails 2.2 and earlier but is now optional.
+
+**Example Scenario**
+
+- If you're inside `AdminProductsController` located in `app/controllers/admin`, and you need to render a view from `app/views/products`, you can do:
+
+```ruby
+render "products/show"
+```
+
+- or explicitly:
+
+```ruby
+render template: "products/show"
+```
+
+**Key Takeaways**
+
+- Use the full path relative to `app/views` when rendering from another controller.
+
+- The embedded `slash (/)` signals Rails to look for the template in a different controller’s view directory.
+
+- `:template` is an optional explicit way to define the view path.
+
