@@ -240,3 +240,412 @@ render action: "edit"
 render "books/edit"
 render template: "books/edit"
 ```
+
+### 2.2.4 Rendering Inline
+
+- `render inline` allows rendering ERB directly within the method call.
+
+```bash
+render inline: "<% products.each do |p| %><p><%= p.name %></p><% end %>"
+```
+
+- Not recommended as it violates `MVC principles`.
+
+- You can specify Builder instead of ERB using type: :builder.
+
+```bash
+render inline: "xml.p {'Horrid coding practice!'}", type: :builder
+```
+
+### 2.2.5 Rendering Text
+
+- `render plain` sends pure text without markup.
+
+```bash
+render plain: "OK"
+```
+
+- Useful for AJAX or API responses.
+
+- To include the layout, use `layout: true` and a `.text.erb` layout file.
+
+### 2.2.6 Rendering HTML
+
+- `render html` sends HTML back to the browser.
+
+```bash
+render html: helpers.tag.strong("Not Found")
+```
+
+- HTML entities are escaped unless composed with `html_safe`.
+
+- Prefer using a view template for complex `HTML`.
+
+### 2.2.7 Rendering JSON
+
+- `render json` automatically calls `to_json` on objects.
+
+```bash
+render json: @product
+```
+
+### 2.2.8 Rendering XML
+
+- `render xml` automatically calls `to_xml` on objects.
+
+```bash
+render xml: @product
+```
+
+### 2.2.9 Rendering JavaScript
+
+```bash
+render js sends JavaScript to the browser.
+
+render js: "alert('Hello Rails');"
+```
+
+### 2.2.10 Rendering Raw Body
+
+- `render body` sends content without specifying content type.
+
+```bash
+render body: "raw"
+```
+
+- Default response type is `text/plain`.
+
+### 2.2.11 Rendering Raw Files
+
+- `render file` renders a raw file `(without ERB processing)`.
+
+```bash
+render file: "#{Rails.root}/public/404.html", layout: false
+```
+
+- **Security concern**: Avoid user input for file paths.
+
+- **Alternative**: `send_file` is often a better choice.
+
+### 2.2.12 Rendering Objects
+
+- `render` an object calls `render_in` on the object.
+
+```ruby
+class Greeting
+  def render_in(view_context)
+    view_context.render html: "Hello, World"
+  end
+  def format
+    :html
+  end
+end
+render Greeting.new  # => "Hello, World"
+```
+
+- **Alternative**: Use `renderable:` option.
+
+```bash
+render renderable: Greeting.new
+```
+
+### 2.2.13 Options for render 
+
+- **`:content_type`**
+
+- **`:layout`**
+
+- **`:location`**
+
+- **`:status`**
+
+- **`:formats`**
+
+- **`:variants`**
+
+#### 2.2.13.1 The `:content_type` Option
+
+- By default, Rails serves responses as `text/html` (or application/json for `:json` and application/xml for `:xml`). You can specify a different content type:
+
+```ruby
+render template: "feed", content_type: "application/rss"
+```
+
+#### 2.2.13.2 The `:layout` Option
+
+- Controls the layout used in rendering:
+
+  - Use a specific layout:
+
+```ruby
+render layout: "special_layout"
+```
+
+  - Render without a layout:
+
+```ruby
+render layout: false
+```
+
+#### 2.2.13.3 The `:location` Option
+
+- Sets the HTTP Location header:
+
+```ruby
+render xml: photo, location: photo_url(photo)
+```
+
+#### 2.2.13.4 The `:status` Option
+
+- Overrides the default HTTP response status:
+
+```ruby
+render status: 500
+render status: :forbidden
+```
+
+- Rails understands both numeric codes and symbols:
+
+`200 :ok`
+
+`201 :created`
+
+`404 :not_found`
+
+`500 :internal_server_error`
+
+- If a non-content status (100-199, 204, 205, or 304) is used, content will be dropped.
+
+#### 2.2.13.5 The `:formats` Option
+
+- Specifies response formats:
+
+```ruby
+render formats: :xml
+render formats: [:json, :xml]
+```
+
+- Raises `ActionView::MissingTemplate` if the specified format template does not exist.
+
+#### 2.2.13.6 The :variants Option
+
+- Allows specifying template variations:
+
+```ruby
+render variants: [:mobile, :desktop]
+```
+
+- Rails searches for templates in this order:
+
+```ruby
+app/views/home/index.html+mobile.erb
+
+app/views/home/index.html+desktop.erb
+
+app/views/home/index.html.erb
+```
+
+- Alternatively, set variants in the controller:
+
+```ruby
+def index
+  request.variant = determine_variant
+end
+
+private
+
+def determine_variant
+  variant = :mobile if session[:use_mobile]
+  variant
+end
+```
+
+- Raises `ActionView::MissingTemplate` if no matching template is found.
+
+
+### 2.2.14 Finding Layouts
+
+- Rails looks for a layout file in `app/views/layouts` matching the controller name.
+
+- If not found, it defaults to `application.html.erb` or `application.builder`.
+
+- `.erb` layout is prioritized over `.builder` if both exist.
+
+#### 2.2.14.1 Specifying Layouts for Controllers
+
+- Override default layout using layout declaration in controllers.
+
+```ruby
+class ProductsController < ApplicationController
+  layout "inventory"
+end
+```
+
+- Set a global layout in `ApplicationController`:
+
+```ruby
+class ApplicationController < ActionController::Base
+  layout "main"
+end
+```
+
+#### 2.2.14.2 Choosing Layouts at Runtime
+
+- Use a method to dynamically select a layout:
+
+```ruby
+class ProductsController < ApplicationController
+  layout :products_layout
+
+  private
+    def products_layout
+      @current_user.special? ? "special" : "products"
+    end
+end
+```
+
+- Use a `Proc` for inline logic:
+
+```ruby
+class ProductsController < ApplicationController
+  layout Proc.new { |controller| controller.request.xhr? ? "popup" : "application" }
+end
+```
+
+#### 2.2.14.3 Conditional Layouts
+
+- Use `:only` and `:except` options to limit layout usage:
+
+```ruby
+class ProductsController < ApplicationController
+  layout "product", except: [:index, :rss]
+end
+```
+
+#### 2.2.14.4 Layout Inheritance
+
+- Layouts cascade down in the hierarchy.
+
+- More specific layouts override general ones.
+
+```ruby
+class ApplicationController < ActionController::Base
+  layout "main"
+end
+
+class ArticlesController < ApplicationController
+end
+
+class SpecialArticlesController < ArticlesController
+  layout "special"
+end
+
+class OldArticlesController < SpecialArticlesController
+  layout false
+  
+  def show
+    @article = Article.find(params[:id])
+  end
+
+  def index
+    @old_articles = Article.older
+    render layout: "old"
+  end
+end
+```
+
+**Layout Usage**:
+
+- Default: `main`
+
+- `SpecialArticlesController#index`: `special`
+
+- `OldArticlesController#show`: No layout
+
+- `OldArticlesController#index`: `old`
+
+#### 2.2.14.5 Template Inheritance
+
+- If a template/partial isn't found, Rails looks up the controller hierarchy.
+
+- Example hierarchy:
+
+```bash
+app/views/admin/products/
+
+app/views/admin/
+
+app/views/application/
+```
+
+- Shared partials can be placed in `app/views/application/`.
+
+```bash
+<%# app/views/admin/products/index.html.erb %>
+<%= render @products || "empty_list" %>
+
+<%# app/views/application/_empty_list.html.erb %>
+There are no items in this list <em>yet</em>.
+```
+
+### 2.2.15 Avoiding Double Render Errors
+
+#### Understanding the Error
+
+- Rails developers may encounter the error:
+
+```bash
+Can only render or redirect once per action
+```
+
+- This occurs due to a misunderstanding of how render works. If multiple render calls are executed within the same action, Rails will throw an error.
+
+- Example of Double Render Error
+
+```ruby
+def show
+  @book = Book.find(params[:id])
+  if @book.special?
+    render action: "special_show"
+  end
+  render action: "regular_show"
+end
+```
+
+#### Why This Fails
+- If `@book.special?` is `true`, `render action: "special_show"` is executed.
+- However, execution continues, and `render action: "regular_show"` is also called, causing an error.
+
+#### Solution: Prevent Multiple Renders
+A simple way to avoid this error is by using `return` to stop execution after the first `render`:
+
+```ruby
+def show
+  @book = Book.find(params[:id])
+  if @book.special?
+    render action: "special_show"
+    return
+  end
+  render action: "regular_show"
+end
+```
+
+- Alternative Approach: Rely on Implicit Rendering
+
+- Rails automatically renders the default template if render is not explicitly called. The following works without errors:
+
+```ruby
+def show
+  @book = Book.find(params[:id])
+  render action: "special_show" if @book.special?
+end
+```
+
+- How This Works:
+
+```bash
+If @book.special? is true, special_show is rendered.
+```
+
+- Otherwise, Rails will implicitly render `show.html.erb`.
+
