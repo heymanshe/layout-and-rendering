@@ -649,3 +649,152 @@ If @book.special? is true, special_show is rendered.
 
 - Otherwise, Rails will implicitly render `show.html.erb`.
 
+## 2.3 Using redirect_to
+
+- `redirect_to` sends a new request to a different URL.
+
+```ruby
+redirect_to photos_url
+```
+
+- `redirect_back` returns the user to the previous page using `HTTP_REFERER`.
+
+```ruby
+redirect_back(fallback_location: root_path)
+```
+
+- `redirect_to` and `redirect_back` do not halt execution immediately; use `return` to stop further execution if needed.
+
+### 2.3.2 Redirect Status Codes
+
+- By default, `redirect_to` uses HTTP status code **302 (temporary redirect)**.
+
+- To specify a different status, use the `:status` option:
+
+```ruby
+redirect_to photos_path, status: 301  # Permanent redirect
+```
+
+- Accepts both numeric and symbolic header designations.
+
+### 2.3.3 Difference Between `render` and `redirect_to`
+
+- `redirect_to` instructs the browser to make a new request.
+
+- `render` does not trigger a new request; it renders the specified template within the current request.
+
+- Example of render Issue:
+
+```ruby
+def index
+  @books = Book.all
+end
+
+def show
+  @book = Book.find_by(id: params[:id])
+  if @book.nil?
+    render action: "index"  # Problem: @books is not set
+  end
+end
+```
+
+- If `@book` is `nil`, rendering index will fail because `@books` is not initialized.
+
+**Correcting with `redirect_to`**:
+
+```ruby
+def index
+  @books = Book.all
+end
+
+def show
+  @book = Book.find_by(id: params[:id])
+  if @book.nil?
+    redirect_to action: :index
+  end
+end
+```
+
+- This triggers a new request for `index`, ensuring `@books` is properly set.
+
+- Downside: Requires a round-trip request, adding latency.
+
+**Alternative Using `render` with `flash.now`**:
+
+```ruby
+def index
+  @books = Book.all
+end
+
+def show
+  @book = Book.find_by(id: params[:id])
+  if @book.nil?
+    @books = Book.all
+    flash.now[:alert] = "Your book was not found"
+    render "index"
+  end
+end
+```
+
+- This avoids a round-trip request.
+
+- The `flash.now[:alert]` message is displayed without persisting across requests.
+
+## 2.4 Using `head` to Build Header-Only Responses
+
+- The `head` method in Rails is used to send responses containing only HTTP headers without a response body. It accepts:
+
+  - An HTTP status code (number or symbol)
+
+  - An optional hash of header names and values
+
+
+**Sending an Error Header**
+
+```bash
+head :bad_request
+```
+
+**Response Headers**:
+
+```bash
+HTTP/1.1 400 Bad Request
+Connection: close
+Date: <timestamp>
+Transfer-Encoding: chunked
+Content-Type: text/html; charset=utf-8
+X-Runtime: <execution_time>
+Set-Cookie: _blog_session=...snip...; path=/; HttpOnly
+Cache-Control: no-cache
+```
+
+**Sending a Header with Location**
+
+```ruby
+head :created, location: photo_path(@photo)
+```
+
+**Response Headers**:
+
+```bash
+HTTP/1.1 201 Created
+Connection: close
+Date: <timestamp>
+Transfer-Encoding: chunked
+Location: /photos/1
+Content-Type: text/html; charset=utf-8
+X-Runtime: <execution_time>
+Set-Cookie: _blog_session=...snip...; path=/; HttpOnly
+Cache-Control: no-cache
+```
+
+**Key Takeaways**
+
+- `head` allows sending HTTP headers without a response body.
+
+- Supports HTTP status codes (e.g., `:bad_request`, `:created`).
+
+- Can include additional headers like location.
+
+- Useful for API responses, redirects, and error handling.
+
