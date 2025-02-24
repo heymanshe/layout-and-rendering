@@ -1006,5 +1006,193 @@ Cache-Control: no-cache
 
 - Newly generated Rails applications include `<%= yield :head %>` within the <head> element of `app/views/layouts/application.html.erb`.
 
+## 3.3 Using the `content_for` Method
+
+- The `content_for` method allows you to insert content into a named `yield` block within a layout. This is useful for structuring distinct regions in a layout, such as sidebars, footers, or the `<head>` section.
+
+```ruby
+<% content_for :head do %>
+  <title>A simple page</title>
+<% end %>
+
+<p>Hello, Rails!</p>
+```
+
+- Corresponding Layout Rendering:
+
+```ruby
+<html>
+  <head>
+    <title>A simple page</title>
+  </head>
+  <body>
+    <p>Hello, Rails!</p>
+  </body>
+</html>
+```
+
+**Benefits of `content_for`**
+
+- Enables inserting page-specific content into layouts.
+
+- Useful for adding:
+
+  - Page-specific <title> elements.
+
+  - JavaScript <script> elements.
+
+  - CSS <link> elements.
+
+  - Context-specific <meta> elements.
+
+- Helps manage structured sections like sidebars and footers efficiently.
+
+**When to Use**
+
+- When different pages need to insert unique content into a predefined layout region.
+
+- When you need to override or append content within a layout dynamically.
+
+
+## 3.4 Using Partials
+
+### 3.4.1 Naming Partials
+
+- Partials are named with a leading `underscore` (e.g., _menu.html.erb).
+
+- Render a partial using:
+
+```ruby
+<%= render "menu" %>
+```
+
+- For partials in another folder:
+
+```ruby
+<%= render "application/menu" %>
+```
+
+- Located in `app/views/application/_menu.html.erb`.
+
+### 3.4.2 Using Partials to Simplify Views
+
+- Used to break down views into smaller components.
+
+```ruby
+<%= render "application/ad_banner" %>
+<h1>Products</h1>
+<%= render "application/footer" %>
+```
+
+- Can be used with `yield` to clean up layouts.
+
+### 3.4.3 Partial Layouts
+
+- A partial can have its own layout:
+
+```ruby
+<%= render partial: "link_area", layout: "graybar" %>
+```
+
+- Layouts for partials follow the same leading underscore convention.
+
+- Located in the same folder as the partial.
+
+### 3.4.4 Passing Local Variables
+
+- Pass variables to a partial using locals:
+
+```ruby
+<%= render partial: "form", locals: {zone: @zone} %>
+```
+
+- Example using `local_assigns`:
+
+```ruby
+<%= render article, full: true %>
+
+<% if local_assigns[:full] %>
+  <%= simple_format article.body %>
+<% else %>
+  <%= truncate article.body %>
+<% end %>
+```
+
+- Implicit local variable:
+
+```ruby
+<%= render partial: "customer", object: @new_customer %>
+```
+
+- `customer` in `_customer.html.erb` refers to `@new_customer`.
+
+```ruby
+<%= render @customer %>
+```
+
+### 3.4.5 Rendering Collections
+
+- Pass a collection to a partial:
+
+```ruby
+<%= render partial: "product", collection: @products %>
+```
+
+```ruby
+<%= render @products %>
+```
+
+- Rails selects the correct partial for mixed collections:
+
+```ruby
+<%= render [customer1, employee1, customer2, employee2] %>
+```
+
+- Handle empty collections:
+
+```ruby
+<%= render(@products) || "There are no products available." %>
+```
+
+### 3.4.6 Local Variables
+
+- Change local variable name:
+
+```ruby
+<%= render partial: "product", collection: @products, as: :item %>
+```
+
+- Pass additional local variables:
+
+```ruby
+<%= render partial: "product", collection: @products, as: :item, locals: {title: "Products Page"} %>
+```
+
+### 3.4.7 Counter Variables
+
+- Rails provides a counter variable for collections:
+
+```ruby
+<%= product_counter %> # 0 for first, 1 for second, etc.
+```
+
+- If using `as: :item`, the counter will be `item_counter`.
+
+### 3.4.8 Spacer Templates
+
+- Insert a spacer template between collection items:
+
+```ruby
+<%= render partial: @products, spacer_template: "product_ruler" %>
+```
+
+### 3.4.9 Collection Partial Layouts
+
+- Apply a layout to each item in a collection:
+
+```ruby
+<%= render partial: "product", collection: @products, layout: "special_layout" %>
+```
+
 
 
