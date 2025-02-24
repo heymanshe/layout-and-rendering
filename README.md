@@ -1194,5 +1194,55 @@ Cache-Control: no-cache
 <%= render partial: "product", collection: @products, layout: "special_layout" %>
 ```
 
+## 3.5 Nested Layouts 
+
+- Nested layouts (or sub-templates) allow a controller-specific layout that extends the main application layout without duplication.
+
+- **Application Layout (application.html.erb)**
+
+```ruby
+<html>
+<head>
+  <title><%= @page_title || "Page Title" %></title>
+  <%= stylesheet_link_tag "layout" %>
+  <%= yield :head %>
+</head>
+<body>
+  <div id="top_menu">Top menu items here</div>
+  <div id="menu">Menu items here</div>
+  <div id="content"><%= content_for?(:content) ? yield(:content) : yield %></div>
+</body>
+</html>
+```
+
+- **News Layout (news.html.erb)**
+
+```ruby
+<% content_for :head do %>
+  <style>
+    #top_menu {display: none}
+    #right_menu {float: right; background-color: yellow; color: black}
+  </style>
+<% end %>
+
+<% content_for :content do %>
+  <div id="right_menu">Right menu items here</div>
+  <%= content_for?(:news_content) ? yield(:news_content) : yield %>
+<% end %>
+
+<%= render template: "layouts/application" %>
+```
+
+**Key Points**
+
+- **Avoid layout duplication** by reusing the `application.html.erb` layout.
+
+- **Modify layouts selectively** (e.g., hiding the top menu and adding a right menu for `NewsController`).
+
+- **Use `content_for`** to define and override specific sections like `:head` and `:content`.
+
+- **Render base layout** using `<%= render template: "layouts/application" %>`.
+
+- **Nested templating possible** using `render template: 'layouts/news'` for further layout customizations.
 
 
