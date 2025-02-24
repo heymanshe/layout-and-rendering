@@ -798,3 +798,166 @@ Cache-Control: no-cache
 
 - Useful for API responses, redirects, and error handling.
 
+
+# 3. Structuring Layouts in Rails
+
+- When Rails renders a view, it combines the view with the current layout. Three primary tools help structure layouts:
+
+  - **Asset Tags**
+
+  - **yield and `content_for`**
+
+  - **Partials**
+
+## 3.1 Asset Tag Helpers
+
+- Asset tag helpers generate HTML linking views to various assets like JavaScript, stylesheets, images, videos, and audios. These do not verify asset existence but assume correctness.
+
+**Available Asset Tag Helpers**
+
+- `auto_discovery_link_tag` (for RSS, Atom, JSON feeds)
+
+- `javascript_include_tag` (for JavaScript files)
+
+- `stylesheet_link_tag` (for CSS files)
+
+- `image_tag` (for images)
+
+- `video_tag` (for videos)
+
+- `audio_tag` (for audios)
+
+### 3.1.1 Linking to Feeds with `auto_discovery_link_tag`
+
+```ruby
+<%= auto_discovery_link_tag(:rss, {action: "feed"}, {title: "RSS Feed"}) %>
+```
+
+- Options:
+
+- `:rel` - Default is "alternate".
+
+- `:type` - Explicit MIME type.
+
+- `:title` - Defaults to uppercase type (e.g., "ATOM", "RSS").
+
+### 3.1.2 Linking to JavaScript Files with `javascript_include_tag`
+
+```ruby
+<%= javascript_include_tag "main" %>
+```
+
+- Uses the **Asset Pipeline** to serve files from `app/assets`, `lib/assets`, or `vendor/assets`.
+
+- Multiple files can be included:
+
+```ruby
+<%= javascript_include_tag "main", "columns" %>
+```
+
+- External JavaScript:
+
+```ruby
+<%= javascript_include_tag "http://example.com/main.js" %>
+```
+
+### 3.1.3 Linking to CSS Files with `stylesheet_link_tag`
+
+```ruby
+<%= stylesheet_link_tag "main" %>
+```
+
+- Uses the Asset Pipeline.
+
+- Multiple stylesheets:
+
+```ruby
+<%= stylesheet_link_tag "main", "columns" %>
+```
+
+- External CSS:
+
+```ruby
+<%= stylesheet_link_tag "http://example.com/main.css" %>
+```
+
+- `Media-specific stylesheets:
+
+```ruby
+<%= stylesheet_link_tag "main_print", media: "print" %>
+```
+
+### 3.1.4 Linking to Images with `image_tag`
+
+```ruby
+<%= image_tag "header.png" %>
+```
+
+- Default directory: `public/images`.
+
+- Supports paths and additional options:
+
+```ruby
+<%= image_tag "icons/delete.gif", height: 45 %>
+```
+
+- Alternative text defaults to the capitalized filename without an extension.
+
+- Supports `size`:
+
+```ruby
+<%= image_tag "home.gif", size: "50x20" %>
+```
+
+- HTML attributes:
+
+```ruby
+<%= image_tag "home.gif", alt: "Go Home", id: "HomeImage", class: "nav_bar" %>
+```
+
+### 3.1.5 Linking to Videos with `video_tag`
+
+```ruby
+<%= video_tag "movie.ogg" %>
+```
+
+- Default directory: `public/videos`.
+
+- Options:
+
+  - `poster`: Placeholder image before playing.
+
+  - `autoplay: true`: Auto-plays video.
+
+  - `loop: true`: Loops video.
+
+  - `controls: true`: Shows video controls.
+
+```ruby
+<%= video_tag "movie.ogg", controls: true, autoplay: true, loop: true %>
+```
+
+- Multiple video sources:
+
+```ruby
+<%= video_tag ["trailer.ogg", "movie.ogg"] %>
+```
+
+### 3.1.6 Linking to Audio Files with `audio_tag`
+
+```ruby
+<%= audio_tag "music.mp3" %>
+```
+
+- Default directory: `public/audios`.
+
+- Options:
+
+  - `autoplay: true`: Auto-plays audio.
+
+  - `controls: true`: Shows audio controls.
+
+```ruby
+<%= audio_tag "music.mp3", controls: true, autoplay: true %>
+```
+
