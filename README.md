@@ -961,3 +961,50 @@ Cache-Control: no-cache
 <%= audio_tag "music.mp3", controls: true, autoplay: true %>
 ```
 
+## 3.2 Understanding `yield`
+
+- `yield` is used in Rails layouts to define sections where content from views will be inserted.
+
+- The simplest usage of `yield` places the entire contents of a view into a layout:
+
+```ruby
+<html>
+  <head>
+  </head>
+  <body>
+    <%= yield %>
+  </body>
+</html>
+```
+
+**Using Multiple `yield` Regions**
+
+- You can create multiple yielding regions by using named `yield` placeholders:
+
+```ruby
+<html>
+  <head>
+    <%= yield :head %>
+  </head>
+  <body>
+    <%= yield %>
+  </body>
+</html>
+```
+
+- The main body of the view will always render into the unnamed `yield`.
+
+- Named yield regions can be populated using `content_for`:
+
+```ruby
+<% content_for :head do %>
+  <title>My Page</title>
+<% end %>
+```
+
+**Default Rails Layout**
+
+- Newly generated Rails applications include `<%= yield :head %>` within the <head> element of `app/views/layouts/application.html.erb`.
+
+
+
